@@ -8,8 +8,10 @@ class Deck:
         self.shuffle()
 
     def pretty_print(self):
+        pp = []
         for card in self.cards:
-            card.pretty_print()
+            pp.append(card.pretty_print())
+        return pp
 
     def shuffle(self):
         random.shuffle(self.cards)

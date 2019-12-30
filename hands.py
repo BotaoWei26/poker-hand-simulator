@@ -66,13 +66,13 @@ def check_flush(cards):
         if card.suit == 'h':
             h.append(card.number)
     if len(c) >= 5:
-        return sorted(c)[0:5]
+        return sorted(c, reverse=True)[0:5]
     if len(d) >= 5:
-        return sorted(d)[0:5]
+        return sorted(d, reverse=True)[0:5]
     if len(s) >= 5:
-        return sorted(s)[0:5]
+        return sorted(s, reverse=True)[0:5]
     if len(h) >= 5:
-        return sorted(h)[0:5]
+        return sorted(h, reverse=True)[0:5]
     return []
 
 
@@ -107,3 +107,8 @@ def find_alike(cards):
     alike.append([numbers[-1], count])
     return sorted(alike, key=lambda x: x[1], reverse=True)
 
+
+def top(hands):
+    for i in range(5):
+        hands = list(filter(lambda x: x[i] == max(hands, key=lambda y: y[i])[i], hands))
+    return hands[0]

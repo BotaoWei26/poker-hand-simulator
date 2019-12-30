@@ -10,5 +10,7 @@ class Player:
         self.cards.append(card)
 
     def pretty_print(self):
+        pp = []
         for card in self.cards:
-            card.pretty_print()
+            pp.append(card.pretty_print())
+        return pp

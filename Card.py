@@ -4,4 +4,4 @@ class Card:
         self.number = number
 
     def pretty_print(self):
-        print("({} {})".format(self.number, self.suit), end=' ')
+        return str(self.number) + str(self.suit)
