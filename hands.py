@@ -15,28 +15,35 @@ hand_ranks = {
 
 
 def hand_type(cards):
+    straight_flush = check_straight_flush(cards)
     flush = check_flush(cards)
     straight = check_straight(cards)
     alike = find_alike(cards)
+    number_rank = sorted(ace_high(set(map(lambda x: x.number, cards))), reverse=True)
 
-    if len(flush) != 0 and straight != 0:
-        return [hand_ranks["straight_flush"], straight, 0, 0, 0, 0]
+    if straight_flush != 0:
+        return [hand_ranks["straight_flush"], straight_flush, 0, 0, 0, 0]
     elif alike[0][1] == 4:
-        return [hand_ranks["quad"], alike[0][0], max(alike[1:], key=lambda x: x[0])[0], 0, 0, 0]
+        number_rank.remove(alike[0][0])
+        return [hand_ranks["quad"], alike[0][0], number_rank[0], 0, 0, 0]
     elif alike[0][1] == 3 and alike[1][1] >= 2:
-        return [hand_ranks["full_house"], alike[0][0], alike[1][0], 0, 0, 0]
+        return [hand_ranks["full_house"], alike[0][0], alike[1][0], 0, 0]
     elif len(flush) != 0:
         return [hand_ranks["flush"], flush[0], flush[1], flush[2], flush[3], flush[4]]
     elif straight != 0:
         return [hand_ranks["straight"], straight, 0, 0, 0, 0]
     elif alike[0][1] == 3:
-        return [hand_ranks["trips"], alike[0][0], alike[1][0], alike[2][0], 0, 0]
+        number_rank.remove(alike[0][0])
+        return [hand_ranks["trips"], alike[0][0], number_rank[0], number_rank[1], 0, 0]
     elif alike[0][1] == 2 and alike[1][1] == 2:
-        return [hand_ranks["two_pair"], alike[0][0], alike[1][0], alike[2][0], 0, 0]
+        number_rank.remove(alike[0][0])
+        number_rank.remove(alike[1][0])
+        return [hand_ranks["two_pair"], alike[0][0], alike[1][0], number_rank[0], 0, 0]
     elif alike[0][1] == 2:
-        return [hand_ranks["pair"], alike[0][0], alike[1][0], alike[2][0], alike[3][0], 0]
+        number_rank.remove(alike[0][0])
+        return [hand_ranks["pair"], alike[0][0], number_rank[0], number_rank[1], number_rank[2], 0]
     else:
-        return [hand_ranks["high_card"], alike[0][0], alike[1][0], alike[2][0], alike[3][0], alike[4][0]]
+        return [hand_ranks["high_card"], number_rank[0], number_rank[1], number_rank[2], number_rank[3], number_rank[4]]
 
 
 def sorted_numbers(cards):
@@ -49,6 +56,13 @@ def sorted_numbers(cards):
 
 def ace_high(numbers):
     return [i if i != 1 else 14 for i in numbers]
+
+
+def check_straight_flush(cards):
+    flush = check_flush(cards)
+    if len(flush) != 0:
+        return check_straight(list(filter(lambda x: x.number in flush, cards)))
+    return 0
 
 
 def check_flush(cards):
@@ -66,26 +80,26 @@ def check_flush(cards):
         if card.suit == 'h':
             h.append(card.number)
     if len(c) >= 5:
-        return sorted(c, reverse=True)[0:5]
+        return sorted(ace_high(c), reverse=True)
     if len(d) >= 5:
-        return sorted(d, reverse=True)[0:5]
+        return sorted(ace_high(d), reverse=True)
     if len(s) >= 5:
-        return sorted(s, reverse=True)[0:5]
+        return sorted(ace_high(s), reverse=True)
     if len(h) >= 5:
-        return sorted(h, reverse=True)[0:5]
+        return sorted(ace_high(h), reverse=True)
     return []
 
 
 def check_straight(cards):
     numbers = sorted_numbers(cards)
     if 1 in numbers:
-        numbers.append(14)
+        numbers.insert(0, 14)
     count = 1
     top = numbers[0]
     for i in range(1, len(numbers)):
         if numbers[i - 1] - numbers[i] == 1:
             count += 1
-        else:
+        elif numbers[i - 1] - numbers[i] != 0:
             count = 1
             top = numbers[i]
         if count == 5:
@@ -94,7 +108,7 @@ def check_straight(cards):
 
 
 def find_alike(cards):
-    numbers = sorted_numbers(ace_high(cards))
+    numbers = sorted(ace_high(sorted_numbers(cards)), reverse=True)
 
     alike = []
     count = 1
