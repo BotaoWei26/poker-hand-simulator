@@ -57,6 +57,8 @@ class Poker:
         return winners
 
     def odds_generator(self):
+        if len(self.players[0].cards) == 0:
+            return
         odds = [[0, 0] for p in range(len(self.players))]
         odds_tries = 0
         odds_deck = copy(self.deck)

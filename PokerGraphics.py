@@ -75,6 +75,9 @@ class PokerGraphics:
         self.restart_button = Button(window, text="RESTART", command=self.restart)
         self.restart_button.grid(column=8, row=num_players+2)
 
+        self.odds = self.poker.odds_generator()
+        self.draw_odds()
+
     def draw_cards(self):
         table = Label(self.window, text="TABLE:")
         table.grid(column=0, row=0)
@@ -100,6 +103,7 @@ class PokerGraphics:
 
         winner = Label(self.window, text="Player {} Wins".format(str(self.poker.winner())))
         winner.grid(column=8, row=self.num_players+3)
+        self.odds = self.poker.odds_generator()
 
     def deal(self):
         if self.count == 0:
@@ -114,6 +118,20 @@ class PokerGraphics:
             return
         self.count += 1
         self.draw_cards()
+        self.odds = self.poker.odds_generator()
+        self.draw_odds()
+
+    def draw_odds(self):
+        try:
+            odds = next(self.odds)
+        except StopIteration:
+            return
+        for i in range(self.num_players):
+            winning_label = Label(self.window, text="Winning: {0:.2%}".format(odds[i][0]))
+            winning_label.grid(column=4, row=i+1)
+            spilt_label = Label(self.window, text="Split: {0:.2%}".format(odds[i][1]))
+            spilt_label.grid(column=5, row=i+1)
+        self.window.after(10, func=self.draw_odds)
 
     def restart(self):
         self.count = 0
