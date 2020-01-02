@@ -94,11 +94,14 @@ class PokerGraphics:
         self.restart_button = Button(window, text="RESTART", command=self.restart)
         self.restart_button.grid(column=8, row=num_players+2)
 
+        self.odds_generator = self.poker.odds_generator()
+        self.odds = []
         self.odds_labels = []
         for i in range(self.num_players):
             self.odds_labels.append([Label(self.window, text="Winning: 0.00%"), Label(self.window, text="Split: 0.00%")])
             self.odds_labels[i][0].grid(column=4, row=i+1)
             self.odds_labels[i][1].grid(column=5, row=i+1)
+
 
     def draw_cards(self):
         for i in range(5):
@@ -116,7 +119,6 @@ class PokerGraphics:
                     card_pp = "back"
                 self.player_cards[i][j].config(image=self.card_sprites[card_pp])
 
-
     def deal(self):
         if self.count == 0:
             self.poker.deal_players()
@@ -130,20 +132,30 @@ class PokerGraphics:
             return
         self.count += 1
         self.draw_cards()
-        self.odds = self.poker.odds_generator()
+        self.odds_generator = self.poker.odds_generator()
         self.draw_odds()
 
     def draw_odds(self):
-        try:
-            odds = next(self.odds)
-        except StopIteration:
-            return
+        end = False
+        for i in range(500):
+            try:
+                self.odds = next(self.odds_generator)
+            except StopIteration:
+                end = True
+                break
         for i in range(self.num_players):
-            self.odds_labels[i][0].config(text="Winning: {0:.2%}".format(odds[i][0]))
-            self.odds_labels[i][1].config(text="Split: {0:.2%}".format(odds[i][1]))
+            self.odds_labels[i][0].config(text="Winning: {0:.2%}".format(self.odds[i][0]))
+            self.odds_labels[i][1].config(text="Split: {0:.2%}".format(self.odds[i][1]))
+
+        if end:
+            return
         self.window.after_idle(func=self.draw_odds)
 
     def restart(self):
         self.count = 0
         self.poker = Poker(self.num_players)
         self.draw_cards()
+        self.odds_generator = self.poker.odds_generator()
+        for i in range(self.num_players):
+            self.odds_labels[i][0].config(text="Winning: 0.00%")
+            self.odds_labels[i][1].config(text="Split: 0.00%")
