@@ -66,7 +66,26 @@ class PokerGraphics:
 
         window.title("Poker")
         window.geometry("1200x800")
-        self.draw_cards()
+
+        self.table_label = Label(self.window, text="TABLE:")
+        self.table_label.grid(column=0, row=0)
+        self.table_cards = []
+
+        self.table_cards = []
+        for i in range(5):
+            self.table_cards.append(Label(self.window, image=self.card_sprites["back"], height=75, width=50, bg='black'))
+            self.table_cards[i].grid(column=i+1, row=0)
+
+        self.player_labels = []
+        self.player_cards = []
+        for i in range(self.num_players):
+            self.player_labels.append(Label(self.window, text="PLAYER {}:".format(i)))
+            self.player_labels[i].grid(column=0, row=i+1)
+            cards = []
+            for j in range(2):
+                cards.append(Label(self.window, image=self.card_sprites["back"], height=75, width=50, bg='black'))
+                cards[j].grid(column=j+1, row=i+1)
+            self.player_cards.append(cards)
 
         self.deal_button = Button(window, text="DRAW", command=self.deal)
         self.deal_button.grid(column=8, row=num_players+1)
@@ -75,35 +94,28 @@ class PokerGraphics:
         self.restart_button = Button(window, text="RESTART", command=self.restart)
         self.restart_button.grid(column=8, row=num_players+2)
 
-        self.odds = self.poker.odds_generator()
-        self.draw_odds()
+        self.odds_labels = []
+        for i in range(self.num_players):
+            self.odds_labels.append([Label(self.window, text="Winning: 0.00%"), Label(self.window, text="Split: 0.00%")])
+            self.odds_labels[i][0].grid(column=4, row=i+1)
+            self.odds_labels[i][1].grid(column=5, row=i+1)
 
     def draw_cards(self):
-        table = Label(self.window, text="TABLE:")
-        table.grid(column=0, row=0)
         for i in range(5):
             if i < len(self.poker.table):
                 card_pp = self.poker.table[i].pretty_print()
             else:
                 card_pp = "back"
-            tcard = Label(self.window, image=self.card_sprites[card_pp], height=75, width=50, bg='black')
-            tcard.grid(column=i+1, row=0)
+            self.table_cards[i].config(image=self.card_sprites[card_pp])
 
         for i in range(self.num_players):
-            player = Label(self.window, text="PLAYER {}:".format(i))
-            player.grid(column=0, row=i+1)
-
             for j in range(2):
                 if j < len(self.poker.players[i].cards):
                     card_pp = self.poker.players[i].pretty_print()[j]
                 else:
                     card_pp = "back"
-                pcard = Label(self.window, image=self.card_sprites[card_pp], height=75, width=50, bg='black')
-                pcard.grid(column=j+1, row=i+1)
+                self.player_cards[i][j].config(image=self.card_sprites[card_pp])
 
-        winner = Label(self.window, text="Player {} Wins".format(str(self.poker.winner())))
-        winner.grid(column=8, row=self.num_players+3)
-        self.odds = self.poker.odds_generator()
 
     def deal(self):
         if self.count == 0:
@@ -127,11 +139,9 @@ class PokerGraphics:
         except StopIteration:
             return
         for i in range(self.num_players):
-            winning_label = Label(self.window, text="Winning: {0:.2%}".format(odds[i][0]))
-            winning_label.grid(column=4, row=i+1)
-            spilt_label = Label(self.window, text="Split: {0:.2%}".format(odds[i][1]))
-            spilt_label.grid(column=5, row=i+1)
-        self.window.after(10, func=self.draw_odds)
+            self.odds_labels[i][0].config(text="Winning: {0:.2%}".format(odds[i][0]))
+            self.odds_labels[i][1].config(text="Split: {0:.2%}".format(odds[i][1]))
+        self.window.after_idle(func=self.draw_odds)
 
     def restart(self):
         self.count = 0
